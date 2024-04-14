@@ -19,8 +19,6 @@ const Home: React.FC = () => {
     "motor_vehicle_theft" : 0.03, 
     "other_assaults" : 0.03, 
     "robbery_no_firearm" : 0.03, 
-    "theft_from_vehicle" : 0.03, 
-    "thefts" : 0.03, 
 
     // priority three - immediate response + no significant threat of serious physical injury or major property damage
     "disorderly_conduct" : 0.01, 
@@ -28,7 +26,9 @@ const Home: React.FC = () => {
     "narcotic__drug_law_violations" : 0.01, 
     "public_drunkenness" : 0.01, 
     "vagrancy_loitering" : 0.01, 
-    "vandalism_criminal_mischief" : 0.01,
+    "vandalism_criminal_mischief" : 0.01, 
+    "theft_from_vehicle" : 0.01, 
+    "thefts" : 0.01,
     
     // priority four - likelihood that an officer's investigation will lead to the apprehension of a suspect based on evidence 
     "embezzlement" : 0, 
@@ -99,7 +99,7 @@ const Home: React.FC = () => {
           center: [-75.15, 39.955], // Philadelphia coordinates
           zoom: 12,
           maxZoom: 14, 
-          minZoom: 11,
+          minZoom: 10.8,
         });
 
         map.on("style.load", () => {
@@ -240,6 +240,51 @@ const Home: React.FC = () => {
               });
             }
           }
+
+          // GeoJSON map of neighborhoods 
+          map.addSource("neighborhoods", {
+            type: "geojson",
+            data: "/geojson/philadelphia_neighborhoods.geojson" // Replace this with the path to your GeoJSON file
+          });
+
+          // Add layer for Philadelphia neighborhoods
+          map.addLayer({
+            id: "neighborhoods-layer",
+            type: "fill",
+            source: "neighborhoods",
+            paint: {
+              "fill-color": "rgba(0, 0, 255, 0.1)", // Adjust the fill color as desired
+              "fill-opacity": 0 // Adjust the fill opacity as desired
+            }
+          });
+
+          // Add a layer for hovered neighborhood outline
+          map.addLayer({
+            id: "hovered-neighborhood-outline",
+            type: "line",
+            source: "neighborhoods",
+            paint: {
+              "line-color": "white", // Change the outline color as desired
+              "line-width": 3 // Change the outline width as desired
+            },
+            filter: ["==", "cartodb_id", ""] // Initially, filter to no features
+          });
+
+          // Variable to hold the ID of the hovered neighborhood feature
+          let hoveredNeighborhoodId: string | undefined;
+
+          // When the mouse moves over the map, check for features at the mouse position
+          map.on("mousemove", "neighborhoods-layer", (e) => {
+            if (e.features && e.features.length > 0) {
+              const hoveredNeighborhoodId = e.features[0].properties.cartodb_id;
+              map.setFilter("hovered-neighborhood-outline", ["==", "cartodb_id", hoveredNeighborhoodId]);
+            }
+          });
+
+          // Reset the state of the previously hovered neighborhood when the mouse leaves the map
+          map.on("mouseleave", "neighborhoods-layer", () => {
+            map.setFilter("hovered-neighborhood-outline", ["==", "cartodb_id", ""]);
+          });
         })
       }
     });
