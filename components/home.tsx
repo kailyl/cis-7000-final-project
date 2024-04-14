@@ -22,7 +22,7 @@ const Home: React.FC = () => {
     "theft_from_vehicle" : 0.03, 
     "thefts" : 0.03, 
 
-    // // priority three - immediate response + no significant threat of serious physical injury or major property damage
+    // priority three - immediate response + no significant threat of serious physical injury or major property damage
     "disorderly_conduct" : 0.01, 
     "driving_under_the_influence" : 0.01, 
     "narcotic__drug_law_violations" : 0.01, 
@@ -45,16 +45,23 @@ const Home: React.FC = () => {
     "receiving_stolen_property" : 0, 
     "weapon_violations" : 0, 
   }
+
+  const recommendedDataTypes = {
+    // additional recommended data
+    "public_schools" : 0.8, 
+  }
   
   useEffect(() => {
     // Load CSV data
     const fetchData = async () => {
       try {
           const textDict = {};
-  
+          const recommendedDict = {};
+
           // Define an array of offense categories
           const offenseCategories = Object.keys(dataTypes);
-  
+          const recommendedCategories = Object.keys(recommendedDataTypes);
+
           // Loop through each offense category to fetch data
           for (const category of offenseCategories) {
             if (dataTypes[category] > 0) {
@@ -63,15 +70,25 @@ const Home: React.FC = () => {
               textDict[category] = text;
             }
           }
-          return textDict;
+
+          for (const category of recommendedCategories) {
+            if (recommendedDataTypes[category] > 0) {
+              const response = await fetch(`/data/${category}.csv`);
+              const text = await response.text();
+              recommendedDict[category] = text;
+            }
+          }
+          return [textDict, recommendedDict];
       } catch (error) {
           console.error("Error loading CSV:", error);
           return null;
       }
     };
 
-    fetchData().then(textDict => {
-      if (!textDict) return; 
+    fetchData().then(res => {
+      const [textDict, recommendedDict] = res; 
+
+      if (!textDict || !recommendedDict) return; 
 
       if (mapContainer.current) {
         mapboxgl.accessToken = "pk.eyJ1IjoibGl1a2FpbHkiLCJhIjoiY2x1ajFpNHZxMGIwYzJrbno1Yjh3MW42MiJ9.xbXOekv11HSOizwSEzxhcQ";
@@ -79,8 +96,10 @@ const Home: React.FC = () => {
         const map = new mapboxgl.Map({
           container: mapContainer.current,
           style: "mapbox://styles/mapbox/dark-v10",
-          center: [-75.1652, 40], // Philadelphia coordinates
-          zoom: 11,
+          center: [-75.15, 39.955], // Philadelphia coordinates
+          zoom: 12,
+          maxZoom: 14, 
+          minZoom: 11,
         });
 
         map.on("style.load", () => {
@@ -160,6 +179,65 @@ const Home: React.FC = () => {
                     "heatmap-opacity": opacity,
                   }
                 });
+            }
+          }
+          // Create map for each recommended category
+          for (const category in recommendedDict) {
+            if (recommendedDict.hasOwnProperty(category)) {
+              const data = d3.csvParse(recommendedDict[category]);
+              
+              // Convert CSV data to dotData array
+              const dotData = data.map(row => ({
+                lng: parseFloat(row.lng),
+                lat: parseFloat(row.lat),
+                weight: recommendedDataTypes[category], // Set weight based on the offense category
+                description: category.split("_") // Description from your CSV data
+              }));
+
+              // Add dot source
+              map.addSource(`${category}-dot-data`, {
+                type: "geojson",
+                data: {
+                  type: "FeatureCollection",
+                  features: dotData.map(point => ({
+                    type: "Feature",
+                    geometry: {
+                      type: "Point",
+                      coordinates: [point.lng, point.lat]
+                    },
+                    properties: {
+                      weight: point.weight,
+                    }
+                  }))
+                }
+              });
+
+              // Add dot layer
+              map.addLayer({
+                id: `${category}-dot-layer`,
+                type: "circle",
+                source: `${category}-dot-data`,
+                paint: {
+                  // Adjust the circle radius to a smaller value
+                  "circle-radius": ["interpolate", ["linear"], ["zoom"], 0, 0.8, 10, 3],
+                  // Color ramp for dot (yellow-orange)
+                  "circle-color": [
+                    "interpolate",
+                    ["linear"],
+                    ["get", "weight"], // Use the "weight" property for color interpolation
+                    0,
+                    "rgba(255, 255, 0, 0.7)",
+                    1,
+                    "rgba(255, 165, 0, 0.7)"
+                  ],
+                  // Adjust the circle opacity by zoom level
+                  "circle-opacity": 1,
+                  // Set circle border color to white
+                  "circle-stroke-color": "#ffffff",
+                  // Set circle border width to 0
+                  "circle-stroke-width": 1
+                }
+              });
             }
           }
         })
