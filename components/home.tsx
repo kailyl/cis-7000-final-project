@@ -14,41 +14,50 @@ const Home: React.FC = () => {
     // priority two - immediate response + immediate and substantial risk of major property loss or damage
     "aggravated_assault_no_firearm" : 0.03,
     "arson" : 0.03, 
-    "burgulary_non-residential" : 0.03, 
-    "burgulary_residential" : 0.03,
+    "burglary_non-residential" : 0.03, 
+    "burglary_residential" : 0.03,
     "motor_vehicle_theft" : 0.03, 
     "other_assaults" : 0.03, 
     "robbery_no_firearm" : 0.03, 
 
     // priority three - immediate response + no significant threat of serious physical injury or major property damage
-    "disorderly_conduct" : 0.01, 
-    "driving_under_the_influence" : 0.01, 
-    "narcotic__drug_law_violations" : 0.01, 
-    "public_drunkenness" : 0.01, 
-    "vagrancy_loitering" : 0.01, 
-    "vandalism_criminal_mischief" : 0.01, 
-    "theft_from_vehicle" : 0.01, 
-    "thefts" : 0.01,
+    // "disorderly_conduct" : 0, 
+    // "driving_under_the_influence" : 0, 
+    // "narcotic___drug_law_violations" : 0, 
+    // "public_drunkenness" : 0, 
+    // "vagrancy_loitering" : 0, 
+    // "vandalism_criminal_mischief" : 0, 
+    // "theft_from_vehicle" : 0, 
+    // "thefts" : 0,
     
-    // priority four - likelihood that an officer's investigation will lead to the apprehension of a suspect based on evidence 
-    "embezzlement" : 0, 
-    "forgery_and_counterfeiting" : 0, 
-    "fraud" : 0, 
-    "gambling_violations" : 0, 
-    "homicide_-_gross_negligence" : 0, 
-    "homicide_-_justifiable" : 0, 
-    "liquor_law_violations" : 0,  
-    "offenses_against_family_and_children" : 0, 
-    "other_sex_offenses_(not_commercialized)" : 0, 
-    "prostitution_and_commercialized_vice" : 0,  
-    "rape" : 0, 
-    "receiving_stolen_property" : 0, 
-    "weapon_violations" : 0, 
+    // // priority four - likelihood that an officer's investigation will lead to the apprehension of a suspect based on evidence 
+    // "embezzlement" : 0, 
+    // "forgery_and_counterfeiting" : 0, 
+    // "fraud" : 0, 
+    // "gambling_violations" : 0, 
+    // "homicide_-_gross_negligence" : 0, 
+    // "homicide_-_justifiable" : 0, 
+    // "liquor_law_violations" : 0,  
+    // "offenses_against_family_and_children" : 0, 
+    // "other_sex_offenses_(not_commercialized)" : 0, 
+    // "prostitution_and_commercialized_vice" : 0,  
+    // "rape" : 0, 
+    // "receiving_stolen_property" : 0, 
+    // "weapon_violations" : 0, 
   }
 
   const recommendedDataTypes = {
     // additional recommended data
     "public_schools" : 0.8, 
+    "subways" : 0.8,
+    "hospitals" : 0.8, 
+  }
+
+  const recommendedDataColors = {
+    // additional recommended data
+    "public_schools" : "rgba(255, 165, 0, 0.8)", 
+    "subways" : "rgba(255, 0, 255, 0.8)",
+    "hospitals" : "rgba(0, 139, 139, 0.8)"
   }
   
   useEffect(() => {
@@ -98,8 +107,8 @@ const Home: React.FC = () => {
           style: "mapbox://styles/mapbox/dark-v10",
           center: [-75.15, 39.955], // Philadelphia coordinates
           zoom: 12,
-          maxZoom: 14, 
-          minZoom: 10.8,
+          maxZoom: 16, 
+          minZoom: 10,
         });
 
         map.on("style.load", () => {
@@ -175,7 +184,6 @@ const Home: React.FC = () => {
                     // Adjust the heatmap radius by zoom level
                     "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 0, 1, 5, 10],
                     // Transition from heatmap to circle layer by zoom level
-                    // "heatmap-opacity": 0.2 // Increase opacity for better visibility
                     "heatmap-opacity": opacity,
                   }
                 });
@@ -185,13 +193,13 @@ const Home: React.FC = () => {
           for (const category in recommendedDict) {
             if (recommendedDict.hasOwnProperty(category)) {
               const data = d3.csvParse(recommendedDict[category]);
-              
+
               // Convert CSV data to dotData array
               const dotData = data.map(row => ({
                 lng: parseFloat(row.lng),
                 lat: parseFloat(row.lat),
                 weight: recommendedDataTypes[category], // Set weight based on the offense category
-                description: category.split("_") // Description from your CSV data
+                description: category.substring(0, category.length - 1).split("_") // Description from your CSV data
               }));
 
               // Add dot source
@@ -228,12 +236,12 @@ const Home: React.FC = () => {
                     0,
                     "rgba(255, 255, 0, 0.7)",
                     1,
-                    "rgba(255, 165, 0, 0.7)"
+                    recommendedDataColors[category]
                   ],
                   // Adjust the circle opacity by zoom level
                   "circle-opacity": 1,
                   // Set circle border color to white
-                  "circle-stroke-color": "#ffffff",
+                  "circle-stroke-color": "#000000",
                   // Set circle border width to 0
                   "circle-stroke-width": 1
                 }
