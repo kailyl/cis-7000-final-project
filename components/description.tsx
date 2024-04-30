@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import styles from '../styles/Description.module.css';
 import * as d3 from "d3";
 
@@ -13,7 +13,7 @@ const Description: React.FC<DescriptionProps> = ({
     const [neighborhoodData, setNeighborhoodData] = useState({})
     const [majority, setMajority] = useState({})
 
-    const fetchData = async () => {
+    const fetchData = async() => {
         try {
             const response = await fetch(`/data/census_data.csv`);
             const text = await response.text();

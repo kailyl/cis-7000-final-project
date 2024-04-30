@@ -85,6 +85,16 @@ const Sidebar: React.FC<SidebarProps> = ({
                 >
                     OpenDataPhilly
                 </a>
+                {" "}and the {" "}
+                <a 
+                    href="https://www.census.gov/" 
+                    className={styles.hyperlink}
+                    style={{
+                        color: "white"
+                    }}
+                >
+                    US Census Bureau 
+                </a>
                 , including the crime incident datasets from 2018 - 2023.
             </p>
 
