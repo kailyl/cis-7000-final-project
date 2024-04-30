@@ -1,0 +1,26 @@
+.body {
+    margin-top: 2em;
+    margin-left: 2em;
+    width: 30em;
+    background-color: #1F1F1F;
+    font-family: 'Inconsolata', serif;
+    padding-bottom: 1em;
+}
+
+.heading {
+    font-size: 1.1em;
+    margin-bottom: 1em;
+    margin-left: 1.5em;
+    padding-top: 2em;
+    color: white;
+    font-style: italic;
+}
+
+.demographics {
+    margin-left: 1.5em;
+    color: white;
+}
+
+.highlighted {
+    color: orange;
+}
