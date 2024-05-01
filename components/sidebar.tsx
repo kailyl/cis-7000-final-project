@@ -56,7 +56,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 Policing Algorithms
             </p>
             <p className={styles.subheading}>
-                HunchLab Pseudo-Clone
+                HunchLab Mock
             </p>
             <p className={styles.description}>
                 Despite well-documented biases and persistent public concern, 

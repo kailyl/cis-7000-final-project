@@ -1,0 +1,10 @@
+.smallScreen {
+    color: white; 
+    font-family: 'Inconsolata', serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 47vh;
+    height: 100%;
+    font-size: 1.5em;
+}
